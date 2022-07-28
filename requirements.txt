@@ -1,0 +1,12 @@
+soundfile
+transformers~=4.20.0
+datasets~=2.3.2
+lumo~=0.9.1.dev0
+librosa
+torch~=1.11.0
+numpy~=1.22.4
+scikit-learn~=1.1.1
+Pillow~=9.1.1
+torchvision~=0.12.0
+joblib~=1.1.0
+torch_geometric
