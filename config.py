@@ -1,6 +1,6 @@
 roots = {
-    'iemocap': '/Users/yhz/Downloads/IEMOCAP/',
-    'meld': '/Users/yhz/Downloads/meld/',
-    'mosi': '/Users/yhz/Downloads/mosi/',
-    'mosei': '/Users/yhz/Downloads/mosei/',
+    'iemocap': 'path/to/iemocap',
+    'meld': 'path/to/meld',
+    'mosi': 'path/to/mosi',
+    'mosei': 'path/to/mosei',
 }

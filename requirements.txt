@@ -1,7 +1,7 @@
 soundfile
 transformers~=4.20.0
 datasets~=2.3.2
-lumo~=0.9.1.dev0
+lumo~=0.11.dev
 librosa
 torch~=1.11.0
 numpy~=1.22.4
