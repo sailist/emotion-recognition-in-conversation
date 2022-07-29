@@ -10,10 +10,10 @@ cd MMEmo
 pip install -r requirements.txt
 ```
 
-- Step 2, download dataset. (See [Dataset Download](#Dataset Download))
+- Step 2, download dataset. (See [Dataset Download](#Dataset-Download))
 - Step 3, modify `./config.py`, change value of each dataset.
 - Step 4, run command to reimplement. (See [Reimplement](#Reimplement))
-- (Optional) Step 5, replace feature of your own. (See [Replace Features](#Replace Features))
+- (Optional) Step 5, replace feature of your own. (See [Replace Features](#Replace-Features))
 
 # Dataset Download
 
@@ -41,7 +41,7 @@ TODO
 ## cogmen
 
 - COGMEN COntextualized GNN based Multimodal Emotion
-  recognitioN [paper](https://arxiv.org/abs/2205.02455) [code](https://github.com/exploration-lab/cogmen)
+  recognitioN [[paper](https://arxiv.org/abs/2205.02455)] | [[code](https://github.com/exploration-lab/cogmen)]
 
 ```
 python3 train_mm.py --module=cogmen --dataset=iemocap-cogmen-sbert-4 --modality=atv --reimplement --device=0 
@@ -51,7 +51,7 @@ python3 train_mm.py --module=cogmen --dataset=iemocap-cogmen-sbert-6 --modality=
 ## MMGCN
 
 - MMGCN: Multimodal Fusion via Deep Graph Convolution Network for Emotion Recognition in
-  Conversation [paper](https://aclanthology.org/2021.acl-long.440.pdf) [code](https://github.com/hujingwen6666/MMGCN)
+  Conversation [[paper](https://aclanthology.org/2021.acl-long.440.pdf)] | [[code](https://github.com/hujingwen6666/MMGCN)]
 
 ```
 python3 train_mm.py --module=mmgcn --dataset=iemocap-cogmen-sbert-4 --modality=atv --reimplement --device=0 
@@ -61,7 +61,7 @@ python3 train_mm.py --module=mmgcn --dataset=iemocap-cogmen-sbert-6 --modality=a
 ## DAG-ERC
 
 - Directed Acyclic Graph Network for Conversational Emotion
-  Recognition [paper](https://arxiv.org/abs/2105.12907) [code](https://github.com/shenwzh3/DAG-ERC/)
+  Recognition [[paper](https://arxiv.org/abs/2105.12907)] | [[code](https://github.com/shenwzh3/DAG-ERC/)]
 
 ```
 python3 train_mm.py --module=dagerc --dataset=iemocap-cogmen-sbert-4 --modality=atv --reimplement --device=0 
@@ -71,7 +71,7 @@ python3 train_mm.py --module=dagerc --dataset=iemocap-cogmen-sbert-6 --modality=
 ## DialogueGCN
 
 - DialogueGCN: A Graph Convolutional Neural Network for Emotion Recognition in
-  Conversation [paper](https://arxiv.org/abs/1908.11540) [code](https://github.com/mianzhang/dialogue_gcn)
+  Conversation [[paper](https://arxiv.org/abs/1908.11540)] | [[code](https://github.com/mianzhang/dialogue_gcn)]
 
 ```
 python3 train_mm.py --module=dgcn --dataset=iemocap-cogmen-sbert-4 --modality=atv --reimplement --device=0
