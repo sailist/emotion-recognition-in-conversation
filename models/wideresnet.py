@@ -267,3 +267,4 @@ if __name__ == "__main__":
     print(net)
     # out = net(x)
     # print(out[0][:4])
+

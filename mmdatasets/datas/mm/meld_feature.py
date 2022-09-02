@@ -9,7 +9,7 @@ from lumo.utils import safe_io as IO
 import numpy as np
 
 
-def meld_cogmen_7(root, split='train', text=None):
+def meld_mmgcn_7(root, split='train', text=None):
     fn = os.path.join(root, 'MMGCN/MELD_features_raw.pkl')
 
     pkl = IO.load_pkl(fn)
@@ -40,7 +40,7 @@ def meld_cogmen_7(root, split='train', text=None):
     return res
 
 
-def meld_cogmen_text(root, *args, **kwargs):
+def meld_mmgcn_text(root, *args, **kwargs):
     fn = os.path.join(root, 'MMGCN/MELD_features_raw.pkl')
 
     pkl = IO.load_pkl(fn)

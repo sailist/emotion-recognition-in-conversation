@@ -147,6 +147,30 @@ class LongTensorMemoryBank(torch.Tensor):
         return self.to(torch.float16)
 
 
+def suit_heads(hidden_size):
+    find_head = False
+    num_head = 1
+    for h in [16, 15, 12, 10, 8, 6]:
+        if hidden_size % h == 0:
+            num_head = h
+            find_head = True
+            break
+    assert find_head
+    return num_head
+
+
+def replace_identity(m, clazz=nn.Linear):
+    if isinstance(m, nn.Module):
+        waitlist = []
+        for k, v in m._modules.items():
+            if isinstance(v, clazz):
+                waitlist.append([k, v])
+            else:
+                replace_identity(v, clazz)
+        for k, v in waitlist:
+            m._modules[k] = nn.Identity()
+
+
 def pick_model_name(model_name) -> nn.Module:
     from . import resnet, resnet_stl, resnet_cifar, wideresnet, preresnet
 

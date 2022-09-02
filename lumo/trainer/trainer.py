@@ -1,4 +1,5 @@
 import bisect
+import sys
 import warnings
 from datetime import datetime
 from functools import lru_cache
@@ -6,24 +7,24 @@ from typing import Union, Dict, Any, Optional, Sequence, Mapping, Callable
 
 import numpy as np
 import torch
+from accelerate import Accelerator
 from accelerate import DistributedDataParallelKwargs
 from accelerate.utils import send_to_device
 from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
-from lumo.data.accelerator import DataLoaderShard, DataLoaderDispatcher
-from lumo.core import ParamsType, TrainStage, Record, MetricType, Meter, Attr
-from lumo.data import DataModule
-from lumo.proc import dist
 
+from lumo.core import ParamsType, TrainStage, Record, MetricType, Meter, Attr
+from lumo.core.disk import TableRow, Metrics
+from lumo.data import DataModule
+from lumo.data.accelerator import DataLoaderShard, DataLoaderDispatcher
+from lumo.data.loader import DataLoaderType, DataLoaderSide
+from lumo.proc import dist
 from lumo.trainer.rnd import RndManager
 from lumo.utils.logger import Logger
-from accelerate import Accelerator
 from .base import _BaseTrainer
 from .components import TrainerExperiment
 from .saver import Saver
-from ..core.table import TableRow
-from ..data.loader import DataLoaderType, DataLoaderSide
 
 
 class Trainer(_BaseTrainer):
@@ -48,7 +49,8 @@ class Trainer(_BaseTrainer):
         self.params.iparams()
         self.exp = TrainerExperiment(self.generate_exp_name())
 
-        self._database = TableRow(self.exp.exp_name, self.exp.test_name_with_dist)
+        self._database = TableRow(self.exp.project_name, self.exp.exp_name, self.exp.test_name_with_dist)
+        self.metric_board = Metrics(self.exp.test_root)
 
         self.rnd = RndManager()
 
@@ -324,7 +326,7 @@ class Trainer(_BaseTrainer):
             item = send_to_device(item, device)
             return item
 
-    def on_exception(self, func: Callable, exception: BaseException):
+    def on_trainer_exception(self, func: Callable, exception: BaseException):
         self.database.update_dict(dict(end=datetime.now(),
                                        finished=False,
                                        error=str(exception),
@@ -341,8 +343,12 @@ class Trainer(_BaseTrainer):
         if commit_info is not None and 'commit' in commit_info:
             commit_hex = commit_info['commit']
         self.database.update('commit_hex', commit_hex)
-        self.database.update_dict(dict(path=self.exp.test_root, start=datetime.now()))
+        self.database.update_dict(dict(
+            test_name=self.exp.test_name,
+            path=self.exp.test_root,
+            start=datetime.now()))
         self.database.set_params(self.params.to_dict())
+        self.database.update('command', ' '.join(sys.argv))
 
         self.icallbacks(self.params)
         self.set_property('initial.callbacks', True)

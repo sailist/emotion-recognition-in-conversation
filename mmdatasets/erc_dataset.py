@@ -4,6 +4,7 @@ Multi-modal emotion recognition conversation dataset (iemocap, meld)
 from lumo import DatasetBuilder
 from .const import get_root
 from .datas import pick_datas
+import numpy as np
 
 
 def get_train_dataset(dataset_name, method='fb', split='train'):
@@ -14,7 +15,6 @@ def get_train_dataset(dataset_name, method='fb', split='train'):
         DatasetBuilder()
         .add_input('all', samples)
         .add_output('all', 'all')
-        .subset(range(int(len(samples) * 0.9)))
         .chain()
     )
 
@@ -29,7 +29,6 @@ def get_val_dataset(dataset_name, method='fb', split='train'):
         DatasetBuilder()
         .add_input('all', samples)
         .add_output('all', 'all')
-        .subset(range(int(len(samples) * 0.9), len(samples)))
         .chain()
     )
 

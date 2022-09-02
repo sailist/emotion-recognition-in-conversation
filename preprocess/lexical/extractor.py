@@ -27,6 +27,7 @@ class FParams(Params):
             'meld-mmgcn-text-7',
             'iemocap-cogmen-text-6',
             'iemocap-cogmen-text-4',
+            'mosei-text-any-7',
         )
         self.bert_type = self.choice('sbert', 'robert')
         self.pretrained_name = 'roberta-large'
@@ -76,11 +77,20 @@ def main():
                                      tokenizer(video_sentence[k], padding=True, return_tensors='pt').to(pm.device))
 
     if pm.dataset == 'iemocap-cogmen-text-6':
-        IO.dump_pkl(new_res, os.path.join(root, 'cogmen', 'iemocap', f'{pm.bert_type}_map.pkl'))
+        fn = os.path.join(root, 'cogmen', 'iemocap', f'{pm.bert_type}_map.pkl')
+        IO.dump_pkl(new_res, fn)
     elif pm.dataset == 'iemocap-cogmen-text-4':
-        IO.dump_pkl(new_res, os.path.join(root, 'cogmen', 'iemocap_4', f'{pm.bert_type}_map.pkl'))
+        fn = os.path.join(root, 'cogmen', 'iemocap_4', f'{pm.bert_type}_map.pkl')
+        IO.dump_pkl(new_res, fn)
     elif pm.dataset == 'meld-mmgcn-text-7':
-        IO.dump_pkl(new_res, os.path.join(root, 'mmgcn', f'{pm.bert_type}_map.pkl'))
+        fn = os.path.join(root, 'mmgcn', f'{pm.bert_type}_map.pkl')
+        IO.dump_pkl(new_res, fn)
+    elif pm.dataset == 'mosei-text-any-7':
+        fn = os.path.join(root, f'{pm.bert_type}_map.pkl')
+        IO.dump_pkl(new_res, fn)
+    else:
+        raise NotImplementedError(pm.dataset)
+    print(fn)
 
 
 if __name__ == '__main__':

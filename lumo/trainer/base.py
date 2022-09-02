@@ -15,18 +15,15 @@ import inspect
 import os
 import sys
 from functools import wraps
-from typing import TYPE_CHECKING, Callable
+from typing import Callable
 
 import numpy as np
+import six
 import torch
 from torch.optim.optimizer import Optimizer
 
 from .components import TrainerPropVar
 from .. import TrainStage
-import six
-
-if TYPE_CHECKING:
-    pass
 
 
 def _exit_hook_v0(exc_type, exc, tb, *args):
@@ -145,7 +142,7 @@ class _BaseTrainer(metaclass=TrainerPropVar):
                 except BaseException as e:
                     _handles = [callback.on_exception(self, func, self.params, e, *aargs, **kkwargs)
                                 for callback in call_set]
-                    self.on_exception(func, e)
+                    self.on_trainer_exception(func, e)
                     if any(_handles):
                         return None
                     else:
@@ -244,5 +241,5 @@ class _BaseTrainer(metaclass=TrainerPropVar):
 
         return "{}.{}".format(pre.lower(), exp_name.lower())
 
-    def on_exception(self, func: Callable, exception: BaseException):
+    def on_trainer_exception(self, func: Callable, exception: BaseException):
         pass

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
-from .features import wav_to_stft, wav_to_fb, wav_to_mfcc
+from .melfeature import wav_to_stft, wav_to_fb, wav_to_mfcc
 from scipy.io import wavfile
 import os
 from joblib import Parallel, delayed
@@ -23,7 +23,7 @@ class FParams(Params):
         self.merge = True
 
 
-def extract(f, y, kwargs: dict):
+def extract(f, kwargs: dict):
     freq, arr = wavfile.read(f)  # type: float, np.ndarray
     if arr.ndim == 1:
         arr = arr[None, :]
@@ -43,6 +43,22 @@ def extract(f, y, kwargs: dict):
         res.append(mfcc_feat.shape[1])
 
     return res
+
+
+def extract_from_sig(arr, kwargs: dict):
+    if arr.ndim == 1:
+        arr = arr[None, :]
+
+    if kwargs.get('fb', False):
+        feat = wav_to_fb(arr)
+    elif kwargs.get('stft', False):
+        feat = wav_to_stft(arr)
+    elif kwargs.get('mfcc', False):
+        feat = wav_to_mfcc(arr, mfcc_dim=24)
+    else:
+        raise NotImplementedError()
+
+    return feat
 
 
 def main():

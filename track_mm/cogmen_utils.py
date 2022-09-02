@@ -2,18 +2,6 @@ import torch
 import numpy as np
 
 
-def extends_attention_mask(attention_mask):
-    assert attention_mask.dim() == 2
-    extended_attention_mask = attention_mask[:, None, None, :]
-    # Since attention_mask is 1.0 for positions we want to attend and 0.0 for
-    # masked positions, this operation will create a tensor which is 0.0 for
-    # positions we want to attend and -10000.0 for masked positions.
-    # Since we are adding it to the raw scores before the softmax, this is
-    # effectively the same as removing these entirely.
-    extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
-    return extended_attention_mask
-
-
 def transformer_batch_graphify(features: torch.Tensor,
                                attention_mask: torch.Tensor,
                                speaker_tensor: torch.Tensor,
@@ -60,17 +48,75 @@ def transformer_batch_graphify(features: torch.Tensor,
     return graph_feature, graph_attention_mask, graph_speaker_tensor
 
 
+def transformer_batch_graphify(features: torch.Tensor,
+                               attention_mask: torch.Tensor,
+                               speaker_tensor: torch.Tensor,
+                               wp=5, wf=5,
+                               **kwargs):
+    """
+
+    :param features: [bs, maxlength, feature fim]
+    :param attention_mask: [bs, maxlength]
+    :param speaker_tensor: [bs, maxlength]
+    :param wp:
+    :param wf:
+    :param edge_type_to_idx:
+    :return:
+    feature: [sum(attention_mask), wp+wf, feature dim]
+    type_ids: [sum(attention_mask), wp+wf]
+    attention_mask: [sum(attention_mask), wp+wf]
+    """
+    text_length = attention_mask.sum(dim=-1).long()
+    attention_mask = attention_mask.bool()
+    flatten_feature = features[attention_mask]  # [sum(attention_mask), feature dim]
+    flatten_attention_mask = attention_mask[attention_mask]  # [sum(attention_mask),]
+    flatten_speaker_tensor = speaker_tensor[attention_mask]  # [sum(attention_mask),]
+
+    device = features.device
+    bs, fdim = flatten_feature.shape
+
+    pb = torch.zeros(wp, fdim, device=device)
+    pa = torch.zeros(wf, fdim, device=device)
+    flatten_feature = torch.cat([pb, flatten_feature, pa])
+
+    pb = torch.zeros(wp, device=device)
+    pa = torch.zeros(wf, device=device)
+    flatten_attention_mask = torch.cat([pb, flatten_attention_mask, pa])
+    flatten_speaker_tensor = torch.cat([pb, flatten_speaker_tensor, pa])
+
+    with torch.no_grad():
+        index = torch.arange(bs)[:, None].repeat(1, wp + 1 + wf)
+        idx_offset = torch.arange(wp + 1 + wf).flip(0)[None, :]
+        index = index + idx_offset
+
+        offset = 0
+        for i in text_length.tolist():
+            bs_index = index[offset:offset + i]
+            bs_index = bs_index - torch.triu(bs_index, wp + 1)
+            bs_index = bs_index - torch.tril(bs_index, wf - i)
+            index[offset:offset + i] = bs_index
+            offset += i
+
+        index = index.flip(1)
+
+    graph_feature = flatten_feature[index]  # [sum(attention_mask), wp+wf, fdim]
+    graph_attention_mask = flatten_attention_mask[index]
+    graph_speaker_tensor = flatten_speaker_tensor[index]
+
+    return graph_feature, graph_attention_mask, graph_speaker_tensor
+
+
 def batch_graphify(features, lengths, speaker_tensor, wp, wf, edge_type_to_idx):
     device = features.device
 
     node_features, edge_index, edge_type = [], [], []
     batch_size = features.size(0)
     length_sum = 0
-    edge_ind = []
+    # edge_ind = []
     edge_index_lengths = []
 
-    for j in range(batch_size):
-        edge_ind.append(edge_perms(lengths[j].cpu().item(), wp, wf))
+    # for j in range(batch_size):
+    # edge_ind.append(edge_perms(lengths[j].cpu().item(), wp, wf))
 
     for j in range(batch_size):
         cur_len = lengths[j].item()

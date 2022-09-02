@@ -7,8 +7,8 @@ def basic_init(m: nn.Module):
     classname = m.__class__.__name__
 
     if 'Conv' in classname:
-        n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-        m.weight.data.normal_(0, math.sqrt(2. / n))
+        # n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+        # m.weight.data.normal_(0, math.sqrt(2. / n))
 
         nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in', nonlinearity='leaky_relu')
         if m.bias is not None:

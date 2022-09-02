@@ -1,11 +1,12 @@
 from functools import partial
+
 from lumo import Logger
 
 if __name__ == '__main__':
-    from mm import iemocap_raw, iemocap_feature, meld_feature
+    from mm import iemocap_raw, iemocap_feature, meld_feature, mosei_feature
     from image import ckplus
 else:
-    from .mm import iemocap_raw, iemocap_feature, meld_feature
+    from .mm import iemocap_raw, iemocap_feature, meld_feature, mosei_feature
     from .image import ckplus
 
 log = Logger()
@@ -62,17 +63,54 @@ regist_data = {
     'iemocap-cogmen-sbert-tsnss-v+-4': partial(iemocap_feature.iemocap_cogmen_4, text='sbert', visual='tsnss+'),
     'iemocap-cogmen-robert-tsnss-v+-4': partial(iemocap_feature.iemocap_cogmen_4, text='robert', visual='tsnss+'),
 
-    'meld-mmgcn-7': partial(meld_feature.meld_cogmen_7, text=None),
-    'meld-mmgcn-sbert-7': partial(meld_feature.meld_cogmen_7, text='sbert'),
+    'meld-mmgcn-7': partial(meld_feature.meld_mmgcn_7, text=None),
+    'meld-mmgcn-sbert-7': partial(meld_feature.meld_mmgcn_7, text='sbert'),
 
     # used for extract text feature
     'iemocap-cogmen-text-4': partial(iemocap_feature.text_cogmen, n_class=4),
     'iemocap-cogmen-text-6': partial(iemocap_feature.text_cogmen, n_class=6),
-    'meld-mmgcn-text-7': meld_feature.meld_cogmen_text,
+    'meld-mmgcn-text-7': meld_feature.meld_mmgcn_text,
 
     # used for extract video feature
     'iemocap-cogmen-video-4': partial(iemocap_feature.video_cogmen, n_class=4),
     'iemocap-cogmen-video-6': partial(iemocap_feature.video_cogmen, n_class=6),
+
+    "mosei-text-any-7": partial(mosei_feature.mosei_text),
+    "mosei-interval-any-7": partial(mosei_feature.mosei_interval),
+
+    "mosei-cim-2": partial(mosei_feature.mosei_cim),
+
+    "mosei-emo-sbert-6": partial(mosei_feature.mosei_adapted, text='sbert'),
+    "mosei-sent-sbert-7": partial(mosei_feature.mosei_adapted, text='sbert', label_type='sent_7'),
+    "mosei-sent-sbert-2": partial(mosei_feature.mosei_adapted, text='sbert', label_type='sent_2'),
+
+    "mosei-multi-sbert-fbank-6": partial(mosei_feature.mosei_adapted,
+                                         text='sbert', audio='fbank', label_type='multi'),
+
+    "mosei-emo-sbert-fbank-6": partial(mosei_feature.mosei_adapted,
+                                       text='sbert', audio='fbank', label_type='emo'),
+    "mosei-emo-sbert-fbank-blc-6": partial(mosei_feature.mosei_adapted,
+                                           text='sbert', audio='fbank', label_type='emo', balance=True),
+
+    "mosei-sent-sbert-fbank-7": partial(mosei_feature.mosei_adapted,
+                                        text='sbert', audio='fbank', label_type='sent_7'),
+    "mosei-sent-sbert-fbank-2": partial(mosei_feature.mosei_adapted,
+                                        text='sbert', audio='fbank', label_type='sent_2'),
+    "mosei-sent-sbert-fbank-+-2": partial(mosei_feature.mosei_adapted,
+                                          text='sbert', audio='fbank', label_type='sent_2+'),
+
+    "mosei-emo-sbert-is10-6": partial(mosei_feature.mosei_adapted,
+                                      text='sbert', audio='is10', label_type='emo'),
+    "mosei-sent-sbert-is10-7": partial(mosei_feature.mosei_adapted,
+                                       text='sbert', audio='is10', label_type='sent_7'),
+    "mosei-sent-sbert-is10-2": partial(mosei_feature.mosei_adapted,
+                                       text='sbert', audio='is10', label_type='sent_2'),
+    "mosei-sent-sbert-is10-+-2": partial(mosei_feature.mosei_adapted,
+                                         text='sbert', audio='is10', label_type='sent_2+'),
+
+    # "mosei-emo-pad80-6": partial(mosei_feature.mosei_unaligned, audio='pad80', label_type='emo'),
+    # "mosei-sent-pad80-7": partial(mosei_feature.mosei_unaligned, audio='pad80', label_type='sent_7'),
+    # "mosei-sent-pad80-2": partial(mosei_feature.mosei_unaligned, audio='pad80', label_type='sent_2'),
 }
 
 

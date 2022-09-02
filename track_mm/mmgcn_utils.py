@@ -3,7 +3,14 @@ import numpy as np
 
 
 def simple_batch_graphify(features, lengths):
-    edge_index, edge_norm, edge_type, node_features = [], [], [], []
+    """
+    Create flattened feature with `lengths`(attention) mask
+
+    :param features: [text_length, batch_size, feature_dim]
+    :param lengths: [batch_size, ]
+    :return: [sum(text_length), feature_dim]
+    """
+    node_features = []
     batch_size = features.size(1)
 
     for j in range(batch_size):

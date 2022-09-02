@@ -528,13 +528,22 @@ class MMGCN(nn.Module):
         return next(iter(self.parameters())).device
 
     def forward(self, a, v, l, dia_len, qmask):
-        qmask = torch.cat([qmask[:x, i, :] for i, x in enumerate(dia_len)], dim=0)
+        """
+
+        :param a: [sum(dia_len), feature_dim]
+        :param v: [sum(dia_len), feature_dim]
+        :param l: [sum(dia_len), feature_dim]
+        :param dia_len: [batch_size, ]
+        :param qmask: [batch_size, speaker_dim]
+        :return:
+        """
+        qmask = torch.cat([qmask[:x, i, :] for i, x in enumerate(dia_len)], dim=0)  # [sum(dia_len), speaker_dim]
         spk_idx = torch.argmax(qmask, dim=-1)
-        spk_emb_vector = self.speaker_embeddings(spk_idx)
+        spk_emb_vector = self.speaker_embeddings(spk_idx)  # [sum(dia_len), embedding_dim]
         if self.use_speaker:
             if 't' in self.modals:
                 l += spk_emb_vector
-        if self.use_modal:
+        if self.use_modal:  # modal type-embedding, default is False
             emb_idx = torch.LongTensor([0, 1, 2], device=self.device)
             emb_vector = self.modal_embeddings(emb_idx)
 
@@ -585,30 +594,31 @@ class MMGCN(nn.Module):
         else:
             return NotImplementedError
         start = 0
-        for i in range(len(dia_len)):
+        for i in range(len(dia_len)):  # each dialog
             sub_adjs = []
-            for j, x in enumerate(features):
+            for j, x in enumerate(features):  # each modal
                 if j < 0:
                     sub_adj = torch.zeros((dia_len[i], dia_len[i])) + torch.eye(dia_len[i])
                 else:
                     sub_adj = torch.zeros((dia_len[i], dia_len[i]))
-                    temp = x[start:start + dia_len[i]]
+                    temp = x[start:start + dia_len[i]]  # modal feature
                     vec_length = torch.sqrt(torch.sum(temp.mul(temp), dim=1))
                     norm_temp = (temp.permute(1, 0) / vec_length)
                     cos_sim_matrix = torch.sum(torch.matmul(norm_temp.unsqueeze(2), norm_temp.unsqueeze(1)),
                                                dim=0)  # seq, seq
                     cos_sim_matrix = cos_sim_matrix * 0.99999
                     sim_matrix = 1 - torch.acos(cos_sim_matrix) / np.pi
-                    sub_adj[:dia_len[i], :dia_len[i]] = sim_matrix
+                    sub_adj[:dia_len[i], :dia_len[i]] = sim_matrix  # dialog-wise similarity
                 sub_adjs.append(sub_adj)
             dia_idx = np.array(np.diag_indices(dia_len[i].detach().cpu().numpy()))
-            for m in range(modal_num):
+            for m in range(modal_num):  # pair-wise modal interact
                 for n in range(modal_num):
                     m_start = start + all_length * m
                     n_start = start + all_length * n
                     if m == n:
-                        adj[m_start:m_start + dia_len[i], n_start:n_start + dia_len[i]] = sub_adjs[m]
-                    else:
+                        adj[m_start:m_start + dia_len[i], n_start:n_start + dia_len[i]] = sub_adjs[
+                            m]  # put each modal adj in final big adj
+                    else:  # different modal interact, only calculate similarity between same uttr
                         modal1 = features[m][start:start + dia_len[i]]  # length, dim
                         modal2 = features[n][start:start + dia_len[i]]
                         normed_modal1 = modal1.permute(1, 0) / torch.sqrt(
@@ -624,8 +634,13 @@ class MMGCN(nn.Module):
                         adj[idx] = dia_sim
 
             start += dia_len[i]
-        d = adj.sum(1)
+
+        d = adj.sum(1)  # degree
+        # D denotes the diagonal degree matrix of graph G
         D = torch.diag(torch.pow(d, -0.5))
-        adj = D.mm(adj).mm(D)
+        # A(adj) denotes the adjacency matrix
+
+        # let P ̃ be the renormalized graph Laplacian matrix
+        adj = D.mm(adj).mm(D)  # P ̃
 
         return adj
